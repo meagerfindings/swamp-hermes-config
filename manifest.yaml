@@ -2,7 +2,7 @@ manifestVersion: 1
 name: "@mgreten/hermes-config"
 version: "2026.05.28.1"
 description: "Manage Hermes AI agent model configuration — set the main model, configure auxiliary task overrides, and restart the gateway. Safe edit protocol: backup → edit → validate → restart."
-repository: "https://github.com/mgreten/swamp-hermes-config"
+repository: "https://github.com/meagerfindings/swamp-hermes-config"
 models:
   - hermes_config.ts
 platforms:
