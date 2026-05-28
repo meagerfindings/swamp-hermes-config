@@ -171,7 +171,9 @@ async function runScript(ga: GA, script: string): Promise<string> {
     const { code, stdout, stderr } = await proc.output();
     if (code !== 0) {
       throw new Error(
-        `Python3 failed (exit ${code}): ${new TextDecoder().decode(stderr).trim()}`,
+        `Python3 failed (exit ${code}): ${
+          new TextDecoder().decode(stderr).trim()
+        }`,
       );
     }
     return new TextDecoder().decode(stdout);
@@ -242,6 +244,16 @@ print("OK")
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Swamp model for managing Hermes AI agent model configuration.
+ *
+ * Provides four methods: `getConfig` (read current settings), `setMainModel`
+ * (change the main inference model), `setAuxiliaryModels` (override or reset
+ * per-task auxiliary models), and `restartGateway` (apply changes).
+ *
+ * All mutating methods follow the safe edit protocol: backup → edit → validate.
+ * `restartGateway` is always a separate explicit call.
+ */
 export const model = {
   type: "@mgreten/hermes-config",
   version: "2026.05.28.1",
@@ -347,7 +359,9 @@ print(json.dumps({'main': main, 'auxiliaryOverrides': aux_overrides}))
             tasks: Object.keys(parsed.auxiliaryOverrides).join(", "),
           });
         } else {
-          context.logger.info("No auxiliary overrides — all tasks use main model");
+          context.logger.info(
+            "No auxiliary overrides — all tasks use main model",
+          );
         }
 
         const handle = await context.writeResource("configState", "current", {
@@ -382,7 +396,9 @@ print(json.dumps({'main': main, 'auxiliaryOverrides': aux_overrides}))
           .int()
           .positive()
           .optional()
-          .describe("Context window in tokens. Omit to leave the existing value unchanged."),
+          .describe(
+            "Context window in tokens. Omit to leave the existing value unchanged.",
+          ),
         think: z
           .boolean()
           .optional()
@@ -408,7 +424,9 @@ print(json.dumps({'main': main, 'auxiliaryOverrides': aux_overrides}))
         await backupConfig(ga);
 
         // Serialize optional values as Python literals
-        const numCtxPy = args.numCtx !== undefined ? String(args.numCtx) : "None";
+        const numCtxPy = args.numCtx !== undefined
+          ? String(args.numCtx)
+          : "None";
         const thinkPy = args.think !== undefined
           ? args.think ? "True" : "False"
           : "None";
@@ -464,15 +482,24 @@ print('OK')
         }
         await validateConfig(ga);
 
-        const details: string[] = [`model=${args.modelName}`, `provider=${args.provider}`];
+        const details: string[] = [
+          `model=${args.modelName}`,
+          `provider=${args.provider}`,
+        ];
         if (args.numCtx !== undefined) details.push(`num_ctx=${args.numCtx}`);
         if (args.think !== undefined) details.push(`think=${args.think}`);
 
-        const handle = await context.writeResource("opResult", "set-main-model", {
-          success: true,
-          message: `Main model updated (${details.join(", ")}). Run restartGateway to apply.`,
-          timestamp: new Date().toISOString(),
-        });
+        const handle = await context.writeResource(
+          "opResult",
+          "set-main-model",
+          {
+            success: true,
+            message: `Main model updated (${
+              details.join(", ")
+            }). Run restartGateway to apply.`,
+            timestamp: new Date().toISOString(),
+          },
+        );
         return { dataHandles: [handle] };
       },
     },
@@ -488,12 +515,14 @@ print('OK')
         tasks: z
           .record(z.string(), z.union([AuxOverrideSchema, z.null()]))
           .describe(
-            'Map of task name → {provider, model} to set, or null to reset to auto. ' +
+            "Map of task name → {provider, model} to set, or null to reset to auto. " +
               'Example: {"title_generation": {"provider": "lmstudio", "model": "qwen3.5:4b-mlx-bf16"}, "mcp": null}',
           ),
       }),
       execute: async (
-        args: { tasks: Record<string, { provider: string; model: string } | null> },
+        args: {
+          tasks: Record<string, { provider: string; model: string } | null>;
+        },
         context: MethodContext,
       ) => {
         const ga = context.globalArgs;
@@ -587,25 +616,30 @@ print('OK')
 
         await validateConfig(ga);
 
-        const setCount = Object.values(args.tasks).filter((v) => v !== null).length;
-        const resetCount = Object.values(args.tasks).filter((v) => v === null).length;
+        const setCount =
+          Object.values(args.tasks).filter((v) => v !== null).length;
+        const resetCount =
+          Object.values(args.tasks).filter((v) => v === null).length;
         const parts: string[] = [];
         if (setCount > 0) parts.push(`set ${setCount} override(s)`);
         if (resetCount > 0) parts.push(`reset ${resetCount} to auto`);
 
-        const handle = await context.writeResource("opResult", "set-aux-models", {
-          success: true,
-          message: `${parts.join(", ")}. Run restartGateway to apply.`,
-          warnings: warnings.length > 0 ? warnings : undefined,
-          timestamp: new Date().toISOString(),
-        });
+        const handle = await context.writeResource(
+          "opResult",
+          "set-aux-models",
+          {
+            success: true,
+            message: `${parts.join(", ")}. Run restartGateway to apply.`,
+            warnings: warnings.length > 0 ? warnings : undefined,
+            timestamp: new Date().toISOString(),
+          },
+        );
         return { dataHandles: [handle] };
       },
     },
 
     restartGateway: {
-      description:
-        "Restart the Hermes gateway to apply config changes. " +
+      description: "Restart the Hermes gateway to apply config changes. " +
         "localMode=false: SSHes to dockerHost (or hermesHost if dockerHost is empty) and " +
         "runs `docker compose restart hermes` — ~15s downtime. " +
         "localMode=true: runs `hermes gateway restart` inside the container.",
@@ -629,7 +663,8 @@ print('OK')
             "restart-gateway",
             {
               success: true,
-              message: "Gateway restart triggered — connection will drop momentarily.",
+              message:
+                "Gateway restart triggered — connection will drop momentarily.",
               timestamp: new Date().toISOString(),
             },
           );
@@ -642,7 +677,9 @@ print('OK')
           return { dataHandles: [handle] };
         } else {
           const host = ga.dockerHost || ga.hermesHost;
-          context.logger.info("Restarting hermes container on {host}", { host });
+          context.logger.info("Restarting hermes container on {host}", {
+            host,
+          });
           const out = await sshExec(
             host,
             `cd ${ga.hermesComposePath} && docker compose restart hermes 2>&1`,
@@ -652,11 +689,15 @@ print('OK')
             "Hermes container restarted. Allow ~15s for the gateway to come back up.";
         }
 
-        const handle = await context.writeResource("opResult", "restart-gateway", {
-          success: true,
-          message,
-          timestamp: new Date().toISOString(),
-        });
+        const handle = await context.writeResource(
+          "opResult",
+          "restart-gateway",
+          {
+            success: true,
+            message,
+            timestamp: new Date().toISOString(),
+          },
+        );
         return { dataHandles: [handle] };
       },
     },
