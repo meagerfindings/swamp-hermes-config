@@ -26,7 +26,7 @@ Create a model instance pointing at your Hermes deployment:
 ```bash
 swamp model create my-hermes-config \
   --type @mgreten/hermes-config \
-  --arg hermesHost=user@hermes.yourdomain.ts.net \
+  --arg hermesHost=youruser@hermes.yourdomain.ts.net \
   --arg dockerHost=dockerhost.yourdomain.ts.net \
   --arg hermesComposePath=/home/youruser/docker-configs/services/hermes
 ```
@@ -83,7 +83,7 @@ Hermes uses `"lmstudio"` as the provider identifier for Ollama/LM-Studio-compati
 | Argument | Default | Description |
 |----------|---------|-------------|
 | `localMode` | `false` | Set `true` when running from inside the Hermes container |
-| `hermesHost` | `hermes` | SSH target for the Hermes container (`user@hostname`) |
+| `hermesHost` | `""` | SSH target for the Hermes container (`user@hostname`) |
 | `configPath` | `/opt/data/config.yaml` | Path to config.yaml inside the container |
 | `hermesBin` | `/opt/hermes/.venv/bin/hermes` | Hermes binary (used by `restartGateway` in localMode) |
 | `dockerHost` | `""` | SSH target for the Docker host (falls back to `hermesHost`) |

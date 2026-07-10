@@ -59,7 +59,7 @@ const GlobalArgs = z.object({
     ),
   hermesHost: z
     .string()
-    .default("hermes")
+    .default("")
     .describe(
       "SSH target for the Hermes container (user@hostname, e.g. user@hermes.example.ts.net). Ignored when localMode=true.",
     ),
@@ -256,7 +256,7 @@ print("OK")
  */
 export const model = {
   type: "@mgreten/hermes-config",
-  version: "2026.06.27.1",
+  version: "2026.06.27.2",
   resources: {
     configState: {
       description: "Current Hermes model configuration snapshot",
