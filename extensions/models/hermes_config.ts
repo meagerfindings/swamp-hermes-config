@@ -256,7 +256,7 @@ print("OK")
  */
 export const model = {
   type: "@mgreten/hermes-config",
-  version: "2026.07.10.1",
+  version: "2026.07.16.1",
   resources: {
     configState: {
       description: "Current Hermes model configuration snapshot",
